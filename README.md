@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>密云同行 - 小程序原型</title>
+<title>密云同行</title>
 <style>
   :root {
     --primary: #2B8C6F;
