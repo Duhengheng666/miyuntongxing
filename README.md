@@ -1,1 +1,2116 @@
-# miyuntongxing
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>密云同行 - 小程序原型</title>
+<style>
+  :root {
+    --primary: #2B8C6F;
+    --primary-light: #3BAF8A;
+    --primary-dark: #1E6B52;
+    --secondary: #4A9BD9;
+    --secondary-light: #6BB5E8;
+    --accent: #F5A623;
+    --bg: #F5F7FA;
+    --card: #FFFFFF;
+    --text: #2C3E50;
+    --text-light: #8E9AAF;
+    --text-muted: #B0BEC5;
+    --border: #E8ECF1;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-xs: 6px;
+    --safe-bottom: 80px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* ========== Page System ========== */
+  .page { display: none; min-height: 100vh; padding-bottom: var(--safe-bottom); }
+  .page.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+  /* ========== Status Bar ========== */
+  .status-bar {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    font-size: 12px;
+    font-weight: 600;
+    background: transparent;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .status-bar.dark { color: #fff; }
+
+  /* ========== Nav Bar ========== */
+  .nav-bar {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    font-size: 17px;
+    font-weight: 600;
+    position: sticky;
+    top: 44px;
+    z-index: 99;
+    background: var(--bg);
+  }
+  .nav-bar .back-btn {
+    position: absolute;
+    left: 16px;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--text);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.04);
+  }
+  .nav-bar .nav-right {
+    position: absolute;
+    right: 16px;
+    font-size: 14px;
+    color: var(--primary);
+    cursor: pointer;
+  }
+
+  /* ========== Tab Bar ========== */
+  .tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 430px;
+    height: 64px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.06);
+    z-index: 200;
+    padding-bottom: 8px;
+  }
+  .tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 6px 12px;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .tab-item .tab-icon { font-size: 24px; color: var(--text-muted); transition: all 0.2s; }
+  .tab-item .tab-label { font-size: 10px; color: var(--text-muted); transition: all 0.2s; }
+  .tab-item.active .tab-icon { color: var(--primary); }
+  .tab-item.active .tab-label { color: var(--primary); font-weight: 600; }
+  .tab-item.center-btn .tab-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 26px;
+    margin-top: -18px;
+    box-shadow: 0 4px 15px rgba(43,140,111,0.4);
+  }
+
+  /* ========== Banner ========== */
+  .banner {
+    width: 100%;
+    height: 220px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0 0 24px 24px;
+  }
+  .banner-bg {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a5276 0%, #2e86c1 30%, #2B8C6F 70%, #1E6B52 100%);
+    position: relative;
+  }
+  .banner-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 80%, rgba(255,255,255,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 20%, rgba(255,255,255,0.12) 0%, transparent 40%);
+  }
+  .banner-mountain {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+  }
+  .banner-content {
+    position: absolute;
+    bottom: 30px;
+    left: 20px;
+    right: 20px;
+    z-index: 2;
+    color: #fff;
+  }
+  .banner-content h1 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .banner-content p {
+    font-size: 14px;
+    opacity: 0.9;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  .banner-dots {
+    position: absolute;
+    bottom: 12px;
+    right: 20px;
+    display: flex;
+    gap: 6px;
+    z-index: 2;
+  }
+  .banner-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.4);
+    transition: all 0.3s;
+  }
+  .banner-dots span.active {
+    width: 18px;
+    background: #fff;
+  }
+  .banner-water {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 40px;
+    opacity: 0.3;
+  }
+
+  /* ========== Quick Actions ========== */
+  .quick-actions {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px 16px;
+    margin: -20px 16px 0;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    z-index: 3;
+  }
+  .quick-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+  .quick-action .qa-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+  }
+  .quick-action:nth-child(1) .qa-icon { background: linear-gradient(135deg, #E8F5E9, #C8E6C9); }
+  .quick-action:nth-child(2) .qa-icon { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); }
+  .quick-action:nth-child(3) .qa-icon { background: linear-gradient(135deg, #FFF3E0, #FFE0B2); }
+  .quick-action .qa-label { font-size: 13px; font-weight: 500; color: var(--text); }
+
+  /* ========== Section ========== */
+  .section { padding: 20px 16px 0; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .section-header h3 { font-size: 17px; font-weight: 700; }
+  .section-header .more {
+    font-size: 13px;
+    color: var(--text-light);
+    cursor: pointer;
+  }
+
+  /* ========== User Card (Feed) ========== */
+  .feed-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .feed-card:active { transform: scale(0.98); }
+  .feed-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .feed-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border);
+  }
+  .feed-avatar-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .feed-user-info { flex: 1; }
+  .feed-user-info .name { font-size: 15px; font-weight: 600; }
+  .feed-user-info .time { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+  .feed-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .tag {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .tag-mbti { background: #EDE7F6; color: #7E57C2; }
+  .tag-interest { background: #E8F5E9; color: #2E7D32; }
+  .tag-time { background: #E3F2FD; color: #1976D2; }
+  .tag-route { background: #FFF3E0; color: #E65100; }
+  .feed-desc {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+  .feed-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .feed-route-preview {
+    flex: 1;
+    padding: 10px 12px;
+    background: #F8F9FB;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-light);
+    margin-right: 12px;
+  }
+  .feed-route-preview .route-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--primary);
+  }
+  .btn-go {
+    padding: 10px 24px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: #fff;
+    border: none;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-go:active { transform: scale(0.95); opacity: 0.9; }
+  .btn-outline {
+    padding: 10px 24px;
+    background: transparent;
+    color: var(--primary);
+    border: 1.5px solid var(--primary);
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-greet {
+    padding: 8px 18px;
+    background: transparent;
+    color: var(--secondary);
+    border: 1.5px solid var(--secondary);
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-right: 8px;
+  }
+
+  /* ========== Onboarding / Profile Form ========== */
+  .onboarding {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #E8F5E9 0%, var(--bg) 30%);
+    padding: 60px 20px 40px;
+  }
+  .onboarding-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  .onboarding-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--primary-dark);
+  }
+  .onboarding-header p { font-size: 14px; color: var(--text-light); }
+  .progress-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .form-label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: block;
+    color: var(--text);
+  }
+  .form-label .required { color: #E53935; margin-left: 2px; }
+  .form-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #fff;
+  }
+  .form-input:focus { border-color: var(--primary); }
+  .form-row { display: flex; gap: 12px; }
+  .form-row .form-group { flex: 1; }
+  .gender-selector {
+    display: flex;
+    gap: 10px;
+  }
+  .gender-option {
+    flex: 1;
+    padding: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    text-align: center;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all 0.2s;
+    background: #fff;
+  }
+  .gender-option.selected {
+    border-color: var(--primary);
+    background: #E8F5E9;
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .mbti-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .mbti-option {
+    padding: 12px 6px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-xs);
+    text-align: center;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+    background: #fff;
+  }
+  .mbti-option.selected {
+    border-color: #7E57C2;
+    background: #EDE7F6;
+    color: #7E57C2;
+  }
+  .interest-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .interest-tag {
+    padding: 10px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 24px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .interest-tag.selected {
+    border-color: var(--primary);
+    background: #E8F5E9;
+    color: var(--primary-dark);
+  }
+  .interest-tag .emoji { font-size: 16px; }
+  .date-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    background: #fff;
+    cursor: pointer;
+  }
+  .duration-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .duration-chip {
+    padding: 10px 20px;
+    border: 1.5px solid var(--border);
+    border-radius: 24px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    background: #fff;
+  }
+  .duration-chip.selected {
+    border-color: var(--secondary);
+    background: #E3F2FD;
+    color: #1565C0;
+    font-weight: 500;
+  }
+  .btn-submit {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.2s;
+  }
+  .btn-submit:active { transform: scale(0.98); }
+
+  /* ========== Find Partner Page ========== */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--bg);
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    white-space: nowrap;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .filter-chip.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+  .partner-cards { padding: 12px 16px; }
+  .partner-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .partner-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+  }
+  .partner-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .partner-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 600;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .partner-info { flex: 1; }
+  .partner-info .name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .partner-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+  .partner-bio {
+    font-size: 13px;
+    color: var(--text-light);
+    line-height: 1.6;
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    background: #F8F9FB;
+    border-radius: var(--radius-sm);
+  }
+  .partner-card-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .partner-card-actions .btn-go { flex: 1; text-align: center; }
+  .partner-card-actions .btn-greet { flex: 0; }
+
+  /* Swipe hint */
+  .swipe-hint {
+    text-align: center;
+    padding: 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  /* ========== Route Page ========== */
+  .route-tabs {
+    display: flex;
+    background: var(--card);
+    margin: 0 16px;
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    box-shadow: var(--shadow);
+  }
+  .route-tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+    color: var(--text-light);
+  }
+  .route-tab.active {
+    background: var(--primary);
+    color: #fff;
+    font-weight: 600;
+  }
+  .route-list { padding: 16px; }
+  .route-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .route-card:active { transform: scale(0.98); }
+  .route-card-banner {
+    height: 140px;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    padding: 16px;
+  }
+  .route-card-banner .route-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(transparent 40%, rgba(0,0,0,0.5));
+  }
+  .route-card-banner .route-title {
+    position: relative;
+    z-index: 1;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+  .route-card-banner .route-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    z-index: 1;
+  }
+  .route-card-body { padding: 16px; }
+  .route-nodes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .route-node {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-light);
+  }
+  .route-node .node-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 2px solid var(--primary);
+    background: #fff;
+  }
+  .route-node .node-arrow { color: var(--text-muted); font-size: 12px; }
+  .route-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-light);
+    margin-bottom: 14px;
+  }
+  .route-meta-item { display: flex; align-items: center; gap: 4px; }
+  .route-target {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 12px;
+  }
+  .route-target span {
+    padding: 3px 10px;
+    background: #F0F7F4;
+    border-radius: 12px;
+    font-size: 12px;
+    color: var(--primary);
+  }
+
+  /* ========== Chat Page ========== */
+  .chat-list { padding: 12px 16px; }
+  .chat-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .chat-item:last-child { border-bottom: none; }
+  .chat-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .chat-avatar .online-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #4CAF50;
+    border: 2px solid #fff;
+  }
+  .chat-info { flex: 1; overflow: hidden; }
+  .chat-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .chat-preview {
+    font-size: 13px;
+    color: var(--text-light);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .chat-time { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+  .chat-unread {
+    width: 18px;
+    height: 18px;
+    background: #E53935;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+
+  /* Chat detail */
+  .chat-detail { display: none; }
+  .chat-detail.active { display: flex; flex-direction: column; height: 100vh; }
+  .chat-messages {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    background: var(--bg);
+  }
+  .msg-time {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin: 16px 0;
+  }
+  .msg-row { display: flex; gap: 10px; margin-bottom: 16px; }
+  .msg-row.self { flex-direction: row-reverse; }
+  .msg-avatar-small {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .msg-bubble {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.6;
+    position: relative;
+  }
+  .msg-row:not(.self) .msg-bubble {
+    background: #fff;
+    border-top-left-radius: 4px;
+    box-shadow: var(--shadow);
+  }
+  .msg-row.self .msg-bubble {
+    background: var(--primary);
+    color: #fff;
+    border-top-right-radius: 4px;
+  }
+  .msg-card-bubble {
+    max-width: 80%;
+    padding: 14px;
+    background: #fff;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .msg-card-bubble .card-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--primary); }
+  .msg-card-bubble .card-info { font-size: 12px; color: var(--text-light); line-height: 1.8; }
+  .msg-card-bubble .card-btn {
+    margin-top: 10px;
+    padding: 8px 20px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .chat-input-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #fff;
+    border-top: 1px solid var(--border);
+  }
+  .chat-input {
+    flex: 1;
+    padding: 10px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 24px;
+    font-size: 14px;
+    outline: none;
+  }
+  .chat-input:focus { border-color: var(--primary); }
+  .chat-send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .chat-toolbar {
+    display: flex;
+    gap: 20px;
+    padding: 10px 16px;
+    background: #fff;
+  }
+  .chat-tool {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #F0F2F5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  /* ========== Profile Page ========== */
+  .profile-header-bg {
+    height: 180px;
+    background: linear-gradient(135deg, var(--primary-dark), var(--secondary));
+    position: relative;
+  }
+  .profile-header-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 100%, rgba(255,255,255,0.1), transparent);
+  }
+  .profile-card {
+    margin: -50px 16px 0;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    z-index: 2;
+    text-align: center;
+  }
+  .profile-avatar-lg {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: -60px auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 600;
+    color: #fff;
+    border: 4px solid #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .profile-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .profile-subtitle { font-size: 13px; color: var(--text-light); margin-bottom: 12px; }
+  .profile-stats {
+    display: flex;
+    justify-content: space-around;
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+  .profile-stat { text-align: center; }
+  .profile-stat .num { font-size: 20px; font-weight: 700; color: var(--primary); }
+  .profile-stat .label { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+  .profile-edit-btn {
+    display: inline-block;
+    padding: 8px 32px;
+    border: 1.5px solid var(--primary);
+    border-radius: 24px;
+    font-size: 13px;
+    color: var(--primary);
+    cursor: pointer;
+    background: transparent;
+  }
+  .profile-menu { padding: 16px; }
+  .menu-group {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .menu-item:last-child { border-bottom: none; }
+  .menu-item:active { background: #F5F7FA; }
+  .menu-item .menu-icon { font-size: 22px; width: 28px; text-align: center; }
+  .menu-item .menu-text { flex: 1; font-size: 15px; }
+  .menu-item .menu-arrow { color: var(--text-muted); font-size: 14px; }
+  .menu-item .menu-badge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #E53935;
+    color: #fff;
+    font-size: 11px;
+  }
+
+  /* ========== Publish Trip Page ========== */
+  .publish-page { padding-top: 92px; padding-bottom: 30px; }
+
+  /* ========== Create Route Page ========== */
+  .create-route-page { padding-top: 92px; }
+  .route-timeline { padding: 0 16px; }
+  .timeline-item {
+    display: flex;
+    gap: 14px;
+    padding: 16px 0;
+    position: relative;
+  }
+  .timeline-line {
+    width: 2px;
+    background: var(--border);
+    position: absolute;
+    left: 19px;
+    top: 46px;
+    bottom: 0;
+  }
+  .timeline-item:last-child .timeline-line { display: none; }
+  .timeline-dot {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #fff;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+  .timeline-content {
+    flex: 1;
+    background: var(--card);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    box-shadow: var(--shadow);
+  }
+  .timeline-time { font-size: 12px; color: var(--secondary); font-weight: 600; margin-bottom: 4px; }
+  .timeline-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .timeline-desc { font-size: 13px; color: var(--text-light); }
+  .add-spot-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    margin: 0 16px 16px;
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fff;
+  }
+  .add-spot-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* ========== Modal / Overlay ========== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 300;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-content {
+    background: #fff;
+    width: 100%;
+    max-width: 430px;
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px;
+    animation: slideUp 0.3s ease;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .modal-handle {
+    width: 40px;
+    height: 4px;
+    background: #ddd;
+    border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+  .modal-title { font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 20px; }
+
+  /* Safety Banner */
+  .safety-banner {
+    margin: 16px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #FFF8E1, #FFF3E0);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #E65100;
+    border-left: 3px solid var(--accent);
+  }
+
+  /* ========== Toast ========== */
+  .toast {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    padding: 12px 24px;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    border-radius: 24px;
+    font-size: 14px;
+    z-index: 400;
+    transition: transform 0.3s ease;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ========== Rating ========== */
+  .rating-stars {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin: 16px 0;
+  }
+  .star {
+    font-size: 36px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    color: #ddd;
+  }
+  .star.filled { color: var(--accent); }
+  .star:hover { transform: scale(1.1); }
+
+  /* Hide scrollbar */
+  ::-webkit-scrollbar { width: 0; }
+</style>
+</head>
+<body>
+
+<!-- ==================== Toast ==================== -->
+<div class="toast" id="toast"></div>
+
+<!-- ==================== Page 0: Onboarding ==================== -->
+<div class="page active" id="page-onboarding">
+  <div class="onboarding">
+    <div class="onboarding-header">
+      <div style="font-size:48px; margin-bottom:12px;">🏔️</div>
+      <h2>欢迎来到密云同行</h2>
+      <p>完善个人信息，找到志同道合的旅行搭子</p>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+    <div class="form-group">
+      <label class="form-label">昵称<span class="required">*</span></label>
+      <input class="form-input" type="text" placeholder="给自己起个名字吧" value="小鱼" oninput="updateProgress()">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">年龄<span class="required">*</span></label>
+        <input class="form-input" type="number" placeholder="18" value="25" oninput="updateProgress()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">性别<span class="required">*</span></label>
+        <div class="gender-selector">
+          <div class="gender-option selected" onclick="selectGender(this)">👦 男</div>
+          <div class="gender-option" onclick="selectGender(this)">👧 女</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">MBTI 类型<span class="required">*</span></label>
+      <div class="mbti-grid">
+        <div class="mbti-option" onclick="selectMBTI(this)">INTJ</div>
+        <div class="mbti-option selected" onclick="selectMBTI(this)">INFP</div>
+        <div class="mbti-option" onclick="selectMBTI(this)">ENTJ</div>
+        <div class="mbti-option" onclick="selectMBTI(this)">ENFP</div>
+        <div class="mbti-option" onclick="selectMBTI(this)">INTP</div>
+        <div class="mbti-option" onclick="selectMBTI(this)">INFJ</div>
+        <div class="mbti-option" onclick="selectMBTI(this)">ENTP</div>
+        <div class="mbti-option" onclick="selectMBTI(this)">ENFJ</div>
+        <div class="mbti-option" onclick="selectMBTI(this)">ISTJ</div>
+        <div class="mbti-option" onclick="selectMBTI(this)">ISFP</div>
+        <div class="mbti-option" onclick="selectMBTI(this)">ESTJ</div>
+        <div class="mbti-option" onclick="selectMBTI(this)">ESFP</div>
+        <div class="mbti-option" onclick="selectMBTI(this)">ISTP</div>
+        <div class="mbti-option" onclick="selectMBTI(this)">ISFJ</div>
+        <div class="mbti-option" onclick="selectMBTI(this)">ESTP</div>
+        <div class="mbti-option" onclick="selectMBTI(this)">ESFJ</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">兴趣标签<span class="required">*</span></label>
+      <div class="interest-tags">
+        <div class="interest-tag selected" onclick="toggleInterest(this)"><span class="emoji">📸</span>摄影</div>
+        <div class="interest-tag" onclick="toggleInterest(this)"><span class="emoji">🥾</span>徒步</div>
+        <div class="interest-tag selected" onclick="toggleInterest(this)"><span class="emoji">🍜</span>美食</div>
+        <div class="interest-tag" onclick="toggleInterest(this)"><span class="emoji">⛺</span>露营</div>
+        <div class="interest-tag" onclick="toggleInterest(this)"><span class="emoji">🎣</span>钓鱼</div>
+        <div class="interest-tag" onclick="toggleInterest(this)"><span class="emoji">🚴</span>骑行</div>
+        <div class="interest-tag" onclick="toggleInterest(this)"><span class="emoji">🎨</span>文创</div>
+        <div class="interest-tag" onclick="toggleInterest(this)"><span class="emoji">🏔️</span>登山</div>
+        <div class="interest-tag" onclick="toggleInterest(this)"><span class="emoji">🌅</span>日出</div>
+        <div class="interest-tag" onclick="toggleInterest(this)"><span class="emoji">🍁</span>赏秋</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">出发时间<span class="required">*</span></label>
+        <input class="date-input" type="date" value="2026-05-01">
+      </div>
+      <div class="form-group">
+        <label class="form-label">游玩时长<span class="required">*</span></label>
+        <div class="duration-chips">
+          <div class="duration-chip" onclick="selectDuration(this)">半天</div>
+          <div class="duration-chip selected" onclick="selectDuration(this)">1天</div>
+          <div class="duration-chip" onclick="selectDuration(this)">2天</div>
+          <div class="duration-chip" onclick="selectDuration(this)">3天+</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-submit" onclick="completeOnboarding()">开始探索 🚀</button>
+  </div>
+</div>
+
+<!-- ==================== Page 1: Home ==================== -->
+<div class="page" id="page-home">
+  <div class="banner">
+    <div class="banner-bg">
+      <svg class="banner-mountain" viewBox="0 0 430 80" preserveAspectRatio="none">
+        <path d="M0,80 L0,50 L60,30 L100,45 L160,15 L200,40 L260,10 L310,35 L370,20 L430,50 L430,80 Z" fill="rgba(255,255,255,0.15)"/>
+        <path d="M0,80 L0,60 L80,45 L130,55 L200,35 L270,50 L340,40 L430,60 L430,80 Z" fill="rgba(255,255,255,0.1)"/>
+      </svg>
+    </div>
+    <div class="banner-content">
+      <h1>🏔️ 密云同行</h1>
+      <p>在山水之间，找到志同道合的旅行搭子</p>
+    </div>
+    <div class="banner-dots">
+      <span class="active"></span><span></span><span></span>
+    </div>
+  </div>
+
+  <div class="quick-actions">
+    <div class="quick-action" onclick="switchTab(1)">
+      <div class="qa-icon">🤝</div>
+      <span class="qa-label">找搭子</span>
+    </div>
+    <div class="quick-action" onclick="switchTab(2)">
+      <div class="qa-icon">🗺️</div>
+      <span class="qa-label">找路线</span>
+    </div>
+    <div class="quick-action" onclick="showPage('page-publish')">
+      <div class="qa-icon">✏️</div>
+      <span class="qa-label">发布行程</span>
+    </div>
+  </div>
+
+  <div class="safety-banner">⚠️ 出行请注意安全，首次见面建议选择公共场所</div>
+
+  <div class="section">
+    <div class="section-header">
+      <h3>🔥 推荐搭子</h3>
+      <span class="more">查看更多 ›</span>
+    </div>
+  </div>
+
+  <!-- Feed Cards -->
+  <div style="padding: 0 16px;">
+    <div class="feed-card" onclick="showPage('page-chat-detail')">
+      <div class="feed-card-header">
+        <div class="feed-avatar-placeholder" style="background: linear-gradient(135deg, #FF6B6B, #ee5a24);">L</div>
+        <div class="feed-user-info">
+          <div class="name">林溪 · <span style="color:#7E57C2; font-size:13px;">INFP</span></div>
+          <div class="time">5月1日-5月2日 · 女</div>
+        </div>
+      </div>
+      <div class="feed-tags">
+        <span class="tag tag-mbti">INFP</span>
+        <span class="tag tag-interest">📸 摄影</span>
+        <span class="tag tag-interest">🏕️ 露营</span>
+        <span class="tag tag-time">5月1日出发</span>
+        <span class="tag tag-route">水库风景线</span>
+      </div>
+      <div class="feed-desc">想找个搭子一起去密云水库拍日落！最好也喜欢露营，可以一起搭帐篷看星星 ✨</div>
+      <div class="feed-actions">
+        <div class="feed-route-preview">
+          <div class="route-dot"></div>
+          密云水库 → 黑龙潭 → 露营地
+        </div>
+        <button class="btn-go" onclick="event.stopPropagation(); showToast('已发送邀请！')">一起去</button>
+      </div>
+    </div>
+
+    <div class="feed-card">
+      <div class="feed-card-header">
+        <div class="feed-avatar-placeholder" style="background: linear-gradient(135deg, #4A9BD9, #6C5CE7);">K</div>
+        <div class="feed-user-info">
+          <div class="name">阿凯 · <span style="color:#7E57C2; font-size:13px;">ENTP</span></div>
+          <div class="time">5月3日 · 男</div>
+        </div>
+      </div>
+      <div class="feed-tags">
+        <span class="tag tag-mbti">ENTP</span>
+        <span class="tag tag-interest">🥾 徒步</span>
+        <span class="tag tag-interest">🎣 钓鱼</span>
+        <span class="tag tag-time">5月3日出发</span>
+      </div>
+      <div class="feed-desc">古北口长城徒步走起！体力好的来，全程约12km，边走边聊不赶时间 🏯</div>
+      <div class="feed-actions">
+        <div class="feed-route-preview">
+          <div class="route-dot"></div>
+          古北口 → 司马台 → 午餐
+        </div>
+        <button class="btn-go" onclick="showToast('已发送邀请！')">一起去</button>
+      </div>
+    </div>
+
+    <div class="feed-card">
+      <div class="feed-card-header">
+        <div class="feed-avatar-placeholder" style="background: linear-gradient(135deg, #00b894, #00cec9);">M</div>
+        <div class="feed-user-info">
+          <div class="name">梅子 · <span style="color:#7E57C2; font-size:13px;">ENFP</span></div>
+          <div class="time">5月2日-5月3日 · 女</div>
+        </div>
+      </div>
+      <div class="feed-tags">
+        <span class="tag tag-mbti">ENFP</span>
+        <span class="tag tag-interest">🍜 美食</span>
+        <span class="tag tag-interest">📸 摄影</span>
+        <span class="tag tag-time">5月2日出发</span>
+      </div>
+      <div class="feed-desc">周末想自驾去密云吃水库鱼！还想顺便拍拍照，有没有吃货搭子一起 🐟</div>
+      <div class="feed-actions">
+        <div class="feed-route-preview">
+          <div class="route-dot"></div>
+          水库渔村 → 山野农家 → 返程
+        </div>
+        <button class="btn-go" onclick="showToast('已发送邀请！')">一起去</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Page 2: Find Partner ==================== -->
+<div class="page" id="page-partner">
+  <div class="status-bar"></div>
+  <div class="nav-bar" style="background:var(--bg)">找搭子</div>
+
+  <div class="filter-bar">
+    <div class="filter-chip active" onclick="toggleFilter(this)">🕐 全部时间</div>
+    <div class="filter-chip" onclick="toggleFilter(this)">📸 摄影</div>
+    <div class="filter-chip" onclick="toggleFilter(this)">🥾 徒步</div>
+    <div class="filter-chip" onclick="toggleFilter(this)">🏕️ 露营</div>
+    <div class="filter-chip" onclick="toggleFilter(this)">🍜 美食</div>
+    <div class="filter-chip" onclick="toggleFilter(this)">🏔️ 登山</div>
+  </div>
+
+  <div class="swipe-hint">↔ 左滑跳过 · 右滑感兴趣</div>
+
+  <div class="partner-cards">
+    <div class="partner-card" onclick="showPage('page-chat-detail')">
+      <div class="partner-card-header">
+        <div class="partner-avatar" style="background: linear-gradient(135deg, #FF6B6B, #ee5a24);">L</div>
+        <div class="partner-info">
+          <div class="name">林溪 <span style="font-size:13px; color:var(--text-light); font-weight:400;">25岁 · 女</span></div>
+          <div class="partner-meta">
+            <span class="tag tag-mbti">INFP</span>
+            <span class="tag tag-interest">📸 摄影</span>
+            <span class="tag tag-interest">🏕️ 露营</span>
+          </div>
+        </div>
+      </div>
+      <div class="partner-bio">想找个搭子一起去密云水库拍日落！最好也喜欢露营，可以一起搭帐篷看星星 ✨</div>
+      <div class="partner-meta" style="margin-bottom:14px;">
+        <span class="route-meta-item">📅 5月1日-5月2日</span>
+        <span class="route-meta-item">📍 水库风景线</span>
+      </div>
+      <div class="partner-card-actions">
+        <button class="btn-greet" onclick="event.stopPropagation(); showToast('打招呼已发送~')">👋 打招呼</button>
+        <button class="btn-go" onclick="event.stopPropagation(); showToast('已发送邀请！')">🤝 一起去</button>
+      </div>
+    </div>
+
+    <div class="partner-card">
+      <div class="partner-card-header">
+        <div class="partner-avatar" style="background: linear-gradient(135deg, #4A9BD9, #6C5CE7);">K</div>
+        <div class="partner-info">
+          <div class="name">阿凯 <span style="font-size:13px; color:var(--text-light); font-weight:400;">28岁 · 男</span></div>
+          <div class="partner-meta">
+            <span class="tag tag-mbti">ENTP</span>
+            <span class="tag tag-interest">🥾 徒步</span>
+            <span class="tag tag-interest">🏔️ 登山</span>
+          </div>
+        </div>
+      </div>
+      <div class="partner-bio">古北口长城徒步走起！体力好的来，全程约12km，边走边聊不赶时间 🏯</div>
+      <div class="partner-meta" style="margin-bottom:14px;">
+        <span class="route-meta-item">📅 5月3日</span>
+        <span class="route-meta-item">📍 长城文化线</span>
+      </div>
+      <div class="partner-card-actions">
+        <button class="btn-greet" onclick="showToast('打招呼已发送~')">👋 打招呼</button>
+        <button class="btn-go" onclick="showToast('已发送邀请！')">🤝 一起去</button>
+      </div>
+    </div>
+
+    <div class="partner-card">
+      <div class="partner-card-header">
+        <div class="partner-avatar" style="background: linear-gradient(135deg, #00b894, #00cec9);">M</div>
+        <div class="partner-info">
+          <div class="name">梅子 <span style="font-size:13px; color:var(--text-light); font-weight:400;">23岁 · 女</span></div>
+          <div class="partner-meta">
+            <span class="tag tag-mbti">ENFP</span>
+            <span class="tag tag-interest">🍜 美食</span>
+            <span class="tag tag-interest">📸 摄影</span>
+          </div>
+        </div>
+      </div>
+      <div class="partner-bio">周末想自驾去密云吃水库鱼！还想顺便拍拍照，有没有吃货搭子一起 🐟</div>
+      <div class="partner-meta" style="margin-bottom:14px;">
+        <span class="route-meta-item">📅 5月2日-5月3日</span>
+        <span class="route-meta-item">📍 自定义路线</span>
+      </div>
+      <div class="partner-card-actions">
+        <button class="btn-greet" onclick="showToast('打招呼已发送~')">👋 打招呼</button>
+        <button class="btn-go" onclick="showToast('已发送邀请！')">🤝 一起去</button>
+      </div>
+    </div>
+
+    <div class="partner-card">
+      <div class="partner-card-header">
+        <div class="partner-avatar" style="background: linear-gradient(135deg, #fdcb6e, #e17055);">Z</div>
+        <div class="partner-info">
+          <div class="name">子墨 <span style="font-size:13px; color:var(--text-light); font-weight:400;">27岁 · 男</span></div>
+          <div class="partner-meta">
+            <span class="tag tag-mbti">ISFP</span>
+            <span class="tag tag-interest">🎣 钓鱼</span>
+            <span class="tag tag-interest">⛺ 露营</span>
+          </div>
+        </div>
+      </div>
+      <div class="partner-bio">装备齐全的露营爱好者，有帐篷和炊具，想找个安静的地方放空两天 🏕️</div>
+      <div class="partner-meta" style="margin-bottom:14px;">
+        <span class="route-meta-item">📅 5月1日-5月3日</span>
+        <span class="route-meta-item">📍 山林休闲线</span>
+      </div>
+      <div class="partner-card-actions">
+        <button class="btn-greet" onclick="showToast('打招呼已发送~')">👋 打招呼</button>
+        <button class="btn-go" onclick="showToast('已发送邀请！')">🤝 一起去</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Page 3: Routes ==================== -->
+<div class="page" id="page-route">
+  <div class="status-bar"></div>
+  <div class="nav-bar" style="background:var(--bg)">路线</div>
+
+  <div style="padding: 0 16px 16px;">
+    <div class="route-tabs">
+      <div class="route-tab active" onclick="switchRouteTab(this, 'official')">🏞️ 官方推荐</div>
+      <div class="route-tab" onclick="switchRouteTab(this, 'custom')">✏️ 自定义路线</div>
+    </div>
+  </div>
+
+  <!-- Official Routes -->
+  <div class="route-list" id="route-official">
+    <div class="route-card" onclick="showRouteDetail(0)">
+      <div class="route-card-banner" style="background: linear-gradient(135deg, #1a5276, #2e86c1);">
+        <div class="route-overlay"></div>
+        <div class="route-badge" style="background:rgba(46,204,113,0.9); color:#fff;">🔥 热门</div>
+        <div class="route-title">💧 水库风景线</div>
+      </div>
+      <div class="route-card-body">
+        <div class="route-nodes">
+          <div class="route-node"><div class="node-dot"></div>密云水库大坝</div>
+          <div class="route-node"><div class="node-arrow">→</div></div>
+          <div class="route-node"><div class="node-dot"></div>白河峡谷</div>
+          <div class="route-node"><div class="node-arrow">→</div></div>
+          <div class="route-node"><div class="node-dot"></div>黑龙潭</div>
+          <div class="route-node"><div class="node-arrow">→</div></div>
+          <div class="route-node"><div class="node-dot"></div>水库日落观景台</div>
+        </div>
+        <div class="route-meta">
+          <span class="route-meta-item">⏱ 约6小时</span>
+          <span class="route-meta-item">📏 约35km</span>
+          <span class="route-meta-item">🚗 建议自驾</span>
+        </div>
+        <div class="route-target">
+          推荐人群：<span>摄影爱好者</span><span>情侣</span><span>家庭</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="route-card">
+      <div class="route-card-banner" style="background: linear-gradient(135deg, #5D4037, #8D6E63);">
+        <div class="route-overlay"></div>
+        <div class="route-badge" style="background:rgba(241,196,15,0.9); color:#fff;">⭐ 经典</div>
+        <div class="route-title">🏯 长城文化线</div>
+      </div>
+      <div class="route-card-body">
+        <div class="route-nodes">
+          <div class="route-node"><div class="node-dot"></div>古北口镇</div>
+          <div class="route-node"><div class="node-arrow">→</div></div>
+          <div class="route-node"><div class="node-dot"></div>司马台长城</div>
+          <div class="route-node"><div class="node-arrow">→</div></div>
+          <div class="route-node"><div class="node-dot"></div>古北水镇</div>
+          <div class="route-node"><div class="node-arrow">→</div></div>
+          <div class="route-node"><div class="node-dot"></div>文化体验馆</div>
+        </div>
+        <div class="route-meta">
+          <span class="route-meta-item">⏱ 约8小时</span>
+          <span class="route-meta-item">📏 约12km</span>
+          <span class="route-meta-item">🚶 徒步为主</span>
+        </div>
+        <div class="route-target">
+          推荐人群：<span>历史爱好者</span><span>徒步达人</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="route-card">
+      <div class="route-card-banner" style="background: linear-gradient(135deg, #1B5E20, #4CAF50);">
+        <div class="route-overlay"></div>
+        <div class="route-badge" style="background:rgba(46,204,113,0.9); color:#fff;">🌿 清新</div>
+        <div class="route-title">🌲 山林休闲线</div>
+      </div>
+      <div class="route-card-body">
+        <div class="route-nodes">
+          <div class="route-node"><div class="node-dot"></div>云蒙山森林公园</div>
+          <div class="route-node"><div class="node-arrow">→</div></div>
+          <div class="route-node"><div class="node-dot"></div>天门山</div>
+          <div class="route-node"><div class="node-arrow">→</div></div>
+          <div class="route-node"><div class="node-dot"></div>清凉谷</div>
+          <div class="route-node"><div class="node-arrow">→</div></div>
+          <div class="route-node"><div class="node-dot"></div>农家乐午餐</div>
+        </div>
+        <div class="route-meta">
+          <span class="route-meta-item">⏱ 约5小时</span>
+          <span class="route-meta-item">📏 约8km</span>
+          <span class="route-meta-item">🚗 自驾+步行</span>
+        </div>
+        <div class="route-target">
+          推荐人群：<span>家庭出游</span><span>休闲放松</span><span>亲子</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Routes -->
+  <div class="route-list" id="route-custom" style="display:none;">
+    <div class="timeline-item">
+      <div class="timeline-dot">📍</div>
+      <div style="flex:1;">
+        <div class="timeline-content">
+          <div class="timeline-time">08:00</div>
+          <div class="timeline-title">密云水库大坝</div>
+          <div class="timeline-desc">拍照打卡，欣赏水库全貌（约1小时）</div>
+        </div>
+      </div>
+      <div class="timeline-line"></div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot">🍜</div>
+      <div style="flex:1;">
+        <div class="timeline-content">
+          <div class="timeline-time">10:00</div>
+          <div class="timeline-title">水库渔村</div>
+          <div class="timeline-desc">品尝密云特色水库鱼（约1.5小时）</div>
+        </div>
+      </div>
+      <div class="timeline-line"></div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot">🏞️</div>
+      <div style="flex:1;">
+        <div class="timeline-content">
+          <div class="timeline-time">13:00</div>
+          <div class="timeline-title">黑龙潭景区</div>
+          <div class="timeline-desc">瀑布观景，溯溪戏水（约2.5小时）</div>
+        </div>
+      </div>
+      <div class="timeline-line"></div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot">🌅</div>
+      <div style="flex:1;">
+        <div class="timeline-content">
+          <div class="timeline-time">17:00</div>
+          <div class="timeline-title">日落观景台</div>
+          <div class="timeline-desc">欣赏密云水库日落（约1小时）</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="add-spot-btn" onclick="showToast('选择景点功能开发中...')">+ 添加新景点</div>
+
+    <div style="padding: 0 16px;">
+      <button class="btn-submit" onclick="showToast('路线已发布！正在匹配搭子...')" style="margin-top:0;">
+        🚀 发布并找搭子
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Page 4: Chat List ==================== -->
+<div class="page" id="page-chat">
+  <div class="status-bar"></div>
+  <div class="nav-bar" style="background:var(--bg)">消息</div>
+
+  <div class="chat-list">
+    <div class="chat-item" onclick="showPage('page-chat-detail')">
+      <div class="chat-avatar" style="background: linear-gradient(135deg, #FF6B6B, #ee5a24);">
+        L
+        <div class="online-dot"></div>
+      </div>
+      <div class="chat-info">
+        <div class="chat-name">林溪</div>
+        <div class="chat-preview">好的！那我们5月1号早上9点大坝见？</div>
+      </div>
+      <div>
+        <div class="chat-time">14:30</div>
+        <div class="chat-unread">2</div>
+      </div>
+    </div>
+    <div class="chat-item">
+      <div class="chat-avatar" style="background: linear-gradient(135deg, #4A9BD9, #6C5CE7);">K</div>
+      <div class="chat-info">
+        <div class="chat-name">阿凯</div>
+        <div class="chat-preview">长城那天的路线我规划好了，你看一下</div>
+      </div>
+      <div>
+        <div class="chat-time">昨天</div>
+      </div>
+    </div>
+    <div class="chat-item">
+      <div class="chat-avatar" style="background: linear-gradient(135deg, #00b894, #00cec9);">M</div>
+      <div class="chat-info">
+        <div class="chat-name">梅子</div>
+        <div class="chat-preview">水库鱼真的超好吃！推荐去老王家的</div>
+      </div>
+      <div>
+        <div class="chat-time">昨天</div>
+      </div>
+    </div>
+    <div class="chat-item">
+      <div class="chat-avatar" style="background: linear-gradient(135deg, #fdcb6e, #e17055);">Z</div>
+      <div class="chat-info">
+        <div class="chat-name">子墨</div>
+        <div class="chat-preview">我带了3人帐篷，够用</div>
+      </div>
+      <div>
+        <div class="chat-time">周一</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Page 4.5: Chat Detail ==================== -->
+<div class="page" id="page-chat-detail">
+  <div class="status-bar"></div>
+  <div class="nav-bar" style="background:#fff; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
+    <div class="back-btn" onclick="showPage('page-chat')">‹</div>
+    林溪
+    <span class="nav-right" onclick="showModal('report')">⚠️</span>
+  </div>
+
+  <div class="chat-messages">
+    <div class="msg-time">今天 14:00</div>
+    <div class="msg-row">
+      <div class="msg-avatar-small" style="background: linear-gradient(135deg, #FF6B6B, #ee5a24);">L</div>
+      <div class="msg-bubble">嗨！看到你也想去密云水库，太巧了！</div>
+    </div>
+    <div class="msg-row self">
+      <div class="msg-avatar-small" style="background: linear-gradient(135deg, var(--primary), var(--secondary));">我</div>
+      <div class="msg-bubble">是啊！我打算5月1号去，你呢？</div>
+    </div>
+    <div class="msg-row">
+      <div class="msg-avatar-small" style="background: linear-gradient(135deg, #FF6B6B, #ee5a24);">L</div>
+      <div class="msg-bubble">我也是5月1号！我查了一下路线，推荐水库风景线</div>
+    </div>
+    <div class="msg-card-bubble">
+      <div class="card-title">🗺️ 水库风景线</div>
+      <div class="card-info">
+        📍 密云水库大坝 → 白河峡谷 → 黑龙潭 → 日落观景台<br>
+        ⏱ 预计6小时 · 🚗 建议自驾<br>
+        📅 5月1日出发 · 👥 已有1人
+      </div>
+      <button class="card-btn" onclick="showToast('行程已加入我的行程！')">加入行程</button>
+    </div>
+    <div class="msg-row">
+      <div class="msg-avatar-small" style="background: linear-gradient(135deg, #FF6B6B, #ee5a24);">L</div>
+      <div class="msg-bubble">这条线风景超好，特别是日落观景台！</div>
+    </div>
+    <div class="msg-row self">
+      <div class="msg-avatar-small" style="background: linear-gradient(135deg, var(--primary), var(--secondary));">我</div>
+      <div class="msg-bubble">听起来不错！我也有车，可以一起拼车</div>
+    </div>
+    <div class="msg-row">
+      <div class="msg-avatar-small" style="background: linear-gradient(135deg, #FF6B6B, #ee5a24);">L</div>
+      <div class="msg-bubble">好的！那我们5月1号早上9点大坝见？</div>
+    </div>
+    <div class="msg-time">今天 14:30</div>
+  </div>
+
+  <div class="chat-toolbar">
+    <div class="chat-tool" onclick="showToast('发送行程卡片')">📋</div>
+    <div class="chat-tool" onclick="showToast('发送位置')">📍</div>
+    <div class="chat-tool">📷</div>
+  </div>
+  <div class="chat-input-bar">
+    <input class="chat-input" type="text" placeholder="说点什么..." id="chatInput" onkeydown="if(event.key==='Enter')sendMsg()">
+    <button class="chat-send-btn" onclick="sendMsg()">➤</button>
+  </div>
+</div>
+
+<!-- ==================== Page 5: Profile ==================== -->
+<div class="page" id="page-profile">
+  <div class="profile-header-bg">
+    <div style="position:absolute; bottom:16px; right:20px; z-index:2;">
+      <span style="color:rgba(255,255,255,0.8); font-size:13px; cursor:pointer;" onclick="showModal('settings')">⚙️ 设置</span>
+    </div>
+  </div>
+  <div class="profile-card">
+    <div class="profile-avatar-lg" style="background: linear-gradient(135deg, var(--primary), var(--secondary));">鱼</div>
+    <div class="profile-name">小鱼</div>
+    <div class="profile-subtitle">INFP · 25岁 · 热爱摄影和美食 📸🍜</div>
+    <div class="profile-stats">
+      <div class="profile-stat"><div class="num">3</div><div class="label">我的行程</div></div>
+      <div class="profile-stat"><div class="num">8</div><div class="label">我的搭子</div></div>
+      <div class="profile-stat"><div class="num">5</div><div class="label">收藏路线</div></div>
+    </div>
+    <button class="profile-edit-btn" onclick="showPage('page-onboarding')">✏️ 编辑资料</button>
+  </div>
+
+  <div class="profile-menu">
+    <div class="menu-group">
+      <div class="menu-item" onclick="showToast('我的行程')">
+        <span class="menu-icon">🗓️</span>
+        <span class="menu-text">我的行程</span>
+        <span class="menu-badge">3</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="menu-item" onclick="showToast('我的搭子')">
+        <span class="menu-icon">🤝</span>
+        <span class="menu-text">我的搭子</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="menu-item" onclick="showToast('我的收藏')">
+        <span class="menu-icon">⭐</span>
+        <span class="menu-text">我的收藏</span>
+        <span class="menu-arrow">›</span>
+      </div>
+    </div>
+    <div class="menu-group">
+      <div class="menu-item" onclick="showModal('rating')">
+        <span class="menu-icon">⭐</span>
+        <span class="menu-text">评价搭子</span>
+        <span class="menu-badge">1</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="menu-item" onclick="showModal('report')">
+        <span class="menu-icon">🚨</span>
+        <span class="menu-text">举报 / 反馈</span>
+        <span class="menu-arrow">›</span>
+      </div>
+    </div>
+    <div class="menu-group">
+      <div class="menu-item" onclick="showModal('settings')">
+        <span class="menu-icon">⚙️</span>
+        <span class="menu-text">设置</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="menu-item">
+        <span class="menu-icon">💬</span>
+        <span class="menu-text">关于密云同行</span>
+        <span class="menu-arrow">›</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Page: Publish Trip ==================== -->
+<div class="page" id="page-publish">
+  <div class="status-bar"></div>
+  <div class="nav-bar" style="background:var(--bg)">
+    <div class="back-btn" onclick="showPage('page-home')">‹</div>
+    发布行程
+  </div>
+  <div class="publish-page" style="padding:0 16px;">
+    <div class="form-group">
+      <label class="form-label">行程标题<span class="required">*</span></label>
+      <input class="form-input" type="text" placeholder="给行程起个名字，如"五一密云两日游"">
+    </div>
+    <div class="form-group">
+      <label class="form-label">行程描述<span class="required">*</span></label>
+      <textarea class="form-input" rows="4" placeholder="描述你的行程计划，吸引搭子加入..." style="resize:none;"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">出发日期</label>
+        <input class="date-input" type="date" value="2026-05-01">
+      </div>
+      <div class="form-group">
+        <label class="form-label">结束日期</label>
+        <input class="date-input" type="date" value="2026-05-02">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">选择路线</label>
+      <div style="padding:14px 16px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:space-between;" onclick="switchTab(2)">
+        <span style="color:var(--text-light);">点击选择或自定义路线</span>
+        <span style="color:var(--text-muted);">›</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">招募人数</label>
+      <div class="duration-chips">
+        <div class="duration-chip" onclick="selectDuration(this)">1-2人</div>
+        <div class="duration-chip selected" onclick="selectDuration(this)">3-4人</div>
+        <div class="duration-chip" onclick="selectDuration(this)">5-6人</div>
+        <div class="duration-chip" onclick="selectDuration(this)">不限</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">补充说明</label>
+      <textarea class="form-input" rows="3" placeholder="如：我有车可以拼、需要自带帐篷等..." style="resize:none;"></textarea>
+    </div>
+    <button class="btn-submit" onclick="showToast('🎉 行程发布成功！搭子们会看到你的行程哦~')">
+      🚀 发布行程
+    </button>
+  </div>
+</div>
+
+<!-- ==================== Tab Bar ==================== -->
+<div class="tab-bar" id="tabBar">
+  <div class="tab-item active" onclick="switchTab(0)">
+    <span class="tab-icon">🏠</span>
+    <span class="tab-label">首页</span>
+  </div>
+  <div class="tab-item" onclick="switchTab(1)">
+    <span class="tab-icon">🤝</span>
+    <span class="tab-label">找搭子</span>
+  </div>
+  <div class="tab-item center-btn" onclick="showPage('page-publish')">
+    <span class="tab-icon">＋</span>
+    <span class="tab-label"></span>
+  </div>
+  <div class="tab-item" onclick="switchTab(2)">
+    <span class="tab-icon">🗺️</span>
+    <span class="tab-label">路线</span>
+  </div>
+  <div class="tab-item" onclick="switchTab(4)">
+    <span class="tab-icon">👤</span>
+    <span class="tab-label">我的</span>
+  </div>
+</div>
+
+<!-- ==================== Modals ==================== -->
+<div class="modal-overlay" id="modal-report">
+  <div class="modal-content">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🚨 举报 / 反馈</div>
+    <div class="form-group">
+      <label class="form-label">举报原因</label>
+      <div class="duration-chips">
+        <div class="duration-chip" onclick="selectDuration(this)">骚扰信息</div>
+        <div class="duration-chip" onclick="selectDuration(this)">虚假信息</div>
+        <div class="duration-chip" onclick="selectDuration(this)">不当行为</div>
+        <div class="duration-chip" onclick="selectDuration(this)">诈骗行为</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">详细说明</label>
+      <textarea class="form-input" rows="3" placeholder="请描述具体情况..." style="resize:none;"></textarea>
+    </div>
+    <button class="btn-submit" style="background:#E53935;" onclick="closeModal('report'); showToast('举报已提交，我们会尽快处理')">提交举报</button>
+    <button style="width:100%; padding:14px; border:none; background:transparent; color:var(--text-light); font-size:15px; cursor:pointer; margin-top:8px;" onclick="closeModal('report')">取消</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-rating">
+  <div class="modal-content">
+    <div class="modal-handle"></div>
+    <div class="modal-title">⭐ 评价搭子</div>
+    <p style="text-align:center; color:var(--text-light); font-size:14px; margin-bottom:8px;">与 <b>林溪</b> 的同行体验</p>
+    <div class="rating-stars">
+      <span class="star filled" onclick="setRating(1)">★</span>
+      <span class="star filled" onclick="setRating(2)">★</span>
+      <span class="star filled" onclick="setRating(3)">★</span>
+      <span class="star filled" onclick="setRating(4)">★</span>
+      <span class="star" onclick="setRating(5)">★</span>
+    </div>
+    <div class="form-group">
+      <textarea class="form-input" rows="3" placeholder="说说这次同行的感受..." style="resize:none;"></textarea>
+    </div>
+    <button class="btn-submit" onclick="closeModal('rating'); showToast('感谢你的评价！')">提交评价</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-settings">
+  <div class="modal-content">
+    <div class="modal-handle"></div>
+    <div class="modal-title">⚙️ 设置</div>
+    <div class="menu-group" style="margin-bottom:16px;">
+      <div class="menu-item">
+        <span class="menu-text">通知设置</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="menu-item">
+        <span class="menu-text">隐私设置</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="menu-item">
+        <span class="menu-text">位置权限</span>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="menu-item">
+        <span class="menu-text">清除缓存</span>
+        <span class="menu-arrow">›</span>
+      </div>
+    </div>
+    <button style="width:100%; padding:14px; border:1.5px solid #E53935; background:transparent; color:#E53935; border-radius:var(--radius-sm); font-size:15px; cursor:pointer;" onclick="closeModal('settings')">退出登录</button>
+    <button style="width:100%; padding:14px; border:none; background:transparent; color:var(--text-light); font-size:15px; cursor:pointer; margin-top:8px;" onclick="closeModal('settings')">关闭</button>
+  </div>
+</div>
+
+
+<!-- ==================== JavaScript ==================== -->
+<script>
+  const pages = {
+    'page-onboarding': 'tabBar',
+    'page-home': 'tabBar',
+    'page-partner': 'tabBar',
+    'page-route': 'tabBar',
+    'page-chat': 'tabBar',
+    'page-profile': 'tabBar',
+    'page-chat-detail': null,
+    'page-publish': null,
+  };
+
+  const tabPages = ['page-home', 'page-partner', 'page-route', 'page-chat', 'page-profile'];
+
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+
+    const tabBar = document.getElementById('tabBar');
+    if (pages[id] === 'tabBar') {
+      tabBar.style.display = 'flex';
+    } else {
+      tabBar.style.display = 'none';
+    }
+
+    // Update tab active state
+    const idx = tabPages.indexOf(id);
+    if (idx >= 0) {
+      const tabs = document.querySelectorAll('.tab-item:not(.center-btn)');
+      tabs.forEach((t, i) => {
+        const tabIdx = i >= 2 ? i : i;
+        // Map: tab 0=home, 1=partner, 2=route(tab3), 3=chat, 4=profile
+        const actualMap = [0, 1, 2, 4];
+        t.classList.toggle('active', actualMap[i] === idx);
+      });
+    }
+    window.scrollTo(0, 0);
+  }
+
+  function switchTab(idx) {
+    showPage(tabPages[idx]);
+  }
+
+  function toggleFilter(el) {
+    el.classList.toggle('active');
+  }
+
+  function selectGender(el) {
+    el.parentElement.querySelectorAll('.gender-option').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    updateProgress();
+  }
+
+  function selectMBTI(el) {
+    el.parentElement.querySelectorAll('.mbti-option').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    updateProgress();
+  }
+
+  function toggleInterest(el) {
+    el.classList.toggle('selected');
+    updateProgress();
+  }
+
+  function selectDuration(el) {
+    el.parentElement.querySelectorAll('.duration-chip').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    updateProgress();
+  }
+
+  function updateProgress() {
+    let filled = 0;
+    const total = 6;
+    if (document.querySelector('.form-input[value]')?.value) filled++;
+    if (document.querySelectorAll('.gender-option.selected').length) filled++;
+    if (document.querySelectorAll('.mbti-option.selected').length) filled++;
+    if (document.querySelectorAll('.interest-tag.selected').length) filled++;
+    if (document.querySelector('.date-input')?.value) filled++;
+    if (document.querySelectorAll('.duration-chip.selected').length) filled++;
+    const pct = Math.round((filled / total) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+  }
+
+  function completeOnboarding() {
+    showToast('🎉 个人信息保存成功！');
+    setTimeout(() => showPage('page-home'), 600);
+  }
+
+  function switchRouteTab(el, type) {
+    el.parentElement.querySelectorAll('.route-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('route-official').style.display = type === 'official' ? 'block' : 'none';
+    document.getElementById('route-custom').style.display = type === 'custom' ? 'block' : 'none';
+  }
+
+  function sendMsg() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    const messages = document.querySelector('.chat-messages');
+    const msgRow = document.createElement('div');
+    msgRow.className = 'msg-row self';
+    msgRow.innerHTML = `
+      <div class="msg-avatar-small" style="background: linear-gradient(135deg, var(--primary), var(--secondary));">我</div>
+      <div class="msg-bubble">${escapeHtml(text)}</div>
+    `;
+    messages.appendChild(msgRow);
+    input.value = '';
+    messages.scrollTop = messages.scrollHeight;
+
+    // Simulate reply
+    setTimeout(() => {
+      const reply = document.createElement('div');
+      reply.className = 'msg-row';
+      reply.innerHTML = `
+        <div class="msg-avatar-small" style="background: linear-gradient(135deg, #FF6B6B, #ee5a24);">L</div>
+        <div class="msg-bubble">好的，收到！😊</div>
+      `;
+      messages.appendChild(reply);
+      messages.scrollTop = messages.scrollHeight;
+    }, 1000);
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function setRating(n) {
+    document.querySelectorAll('.star').forEach((s, i) => {
+      s.classList.toggle('filled', i < n);
+    });
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  function showModal(name) {
+    document.getElementById('modal-' + name).classList.add('show');
+  }
+
+  function closeModal(name) {
+    document.getElementById('modal-' + name).classList.remove('show');
+  }
+
+  // Close modal on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('show');
+    });
+  });
+
+  // Init
+  updateProgress();
+</script>
+</body>
+</html>
